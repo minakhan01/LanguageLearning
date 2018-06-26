@@ -259,8 +259,8 @@ public class DeviceControlActivity extends Activity implements TextToSpeech.OnIn
 
     private void displayData(String data) {
         if (data != null) {
-            mDataField.setText(data);
             final String substr = data.substring(0,data.indexOf("\n"));
+            mDataField.setText(substr);
             speakWords(substr + "");
         }
     }
