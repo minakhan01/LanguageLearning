@@ -18,6 +18,7 @@
 
   2-1. Update the package list.  
   `sudo apt-get update  `
+
   2-1. Install the dependencies.  
   `sudo apt-get install libdbus-1-dev libglib2.0-dev libudev-dev libical-dev libreadline-dev -y  `
 
