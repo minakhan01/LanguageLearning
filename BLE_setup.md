@@ -6,38 +6,38 @@
 
 1. ##### Check Current BlueZ Version
 
-  1-1. Before starting, let’s check the current BlueZ version.
-  `bluetoothctl -v`
-  In case you are using Raspbian Stretch (November 2017 version), the BlueZ version should be 5.43.
-  `bluetoothctl -v`
-  `5.43`
+  1-1. Before starting, let’s check the current BlueZ version.  
+  `bluetoothctl -v`  
+  In case you are using Raspbian Stretch (November 2017 version), the BlueZ version should be 5.43.  
+  `bluetoothctl -v`  
+  `5.43  `
 
   
 
 2. ##### Install Dependencies
 
-  2-1. Update the package list.
-  `sudo apt-get update`
-  2-1. Install the dependencies.
-  `sudo apt-get install libdbus-1-dev libglib2.0-dev libudev-dev libical-dev libreadline-dev -y`
+  2-1. Update the package list.  
+  `sudo apt-get update  `
+  2-1. Install the dependencies.  
+  `sudo apt-get install libdbus-1-dev libglib2.0-dev libudev-dev libical-dev libreadline-dev -y  `
 
   
 
 3. ##### Install Latest BlueZ
 
-  3-1. Download the latest version of BlueZ source code.
-  `wget www.kernel.org/pub/linux/bluetooth/bluez-5.50.tar.xz`
-  3-2. Uncompress the downloaded file
-  `tar xvf bluez-5.50.tar.xz && cd bluez-5.50`
-  3-3. Configure.
-  `./configure --prefix=/usr --mandir=/usr/share/man --sysconfdir=/etc --localstatedir=/var --enable-experimental`
+  3-1. Download the latest version of BlueZ source code.  
+  `wget www.kernel.org/pub/linux/bluetooth/bluez-5.50.tar.xz  `
+  3-2. Uncompress the downloaded file  
+  `tar xvf bluez-5.50.tar.xz && cd bluez-5.50`  
+  3-3. Configure.  
+  `./configure --prefix=/usr --mandir=/usr/share/man --sysconfdir=/etc --localstatedir=/var --enable-experimental`  
 
-  3-4. Compile the source code.
-  `make -j4`
-  3-5. Install.
-  `sudo make install`
-  3-6. Reboot Raspberry Pi 3.
-  `sudo reboot`
+  3-4. Compile the source code.  
+  `make -j4  `
+  3-5. Install.  
+  `sudo make install`  
+  3-6. Reboot Raspberry Pi 3.  
+  `sudo reboot  `
 
   
 
