@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_web_client_id" translatable="false">20912817989-i596hahj33aohtppr8bupgt6taouofdr.apps.googleusercontent.com</string>
+    <string name="firebase_database_url" translatable="false">https://languagelearning-17d88.firebaseio.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">20912817989</string>
+    <string name="google_api_key" translatable="false">AIzaSyCTT9i0YAN76f-3HRrphjMo_F3TdRI5kkQ</string>
+    <string name="google_app_id" translatable="false">1:20912817989:android:057e92167ca9714a</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyCTT9i0YAN76f-3HRrphjMo_F3TdRI5kkQ</string>
+    <string name="google_storage_bucket" translatable="false">languagelearning-17d88.appspot.com</string>
+    <string name="project_id" translatable="false">languagelearning-17d88</string>
+</resources>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FirebaseActivity"
+    tools:layout_editor_absoluteY="73dp">
+
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="369dp"
+        android:layout_height="503dp"
+        app:layout_constraintBottom_toTopOf="@+id/imageView2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="129dp"
+        android:layout_height="119dp"
+        android:src="@drawable/googleg_standard_color_18"
+        app:layout_constraintBottom_toTopOf="@+id/imageView3"
+        app:layout_constraintEnd_toStartOf="@+id/scrollView2"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toEndOf="@+id/scrollView2"
+        app:layout_constraintTop_toBottomOf="@+id/imageView0"
+        android:contentDescription="TODO" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="129dp"
+        android:layout_height="119dp"
+        android:src="@drawable/googleg_standard_color_18"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/scrollView2"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/scrollView2"
+        app:layout_constraintTop_toBottomOf="@+id/imageView3"
+        android:contentDescription="TODO" />
+
+    <ImageView
+        android:id="@+id/imageView0"
+        android:layout_width="129dp"
+        android:layout_height="119dp"
+        android:src="@drawable/googleg_standard_color_18"
+        app:layout_constraintBottom_toTopOf="@+id/scrollView2"
+        app:layout_constraintEnd_toStartOf="@+id/scrollView2"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toEndOf="@+id/scrollView2"
+        app:layout_constraintTop_toBottomOf="@+id/scrollView2"
+        app:layout_constraintVertical_bias="0.776"
+        android:contentDescription="TODO" />
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="129dp"
+        android:layout_height="119dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/googleg_standard_color_18"
+        app:layout_constraintBottom_toTopOf="@+id/imageView2"
+        app:layout_constraintEnd_toStartOf="@+id/scrollView2"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/scrollView2"
+        app:layout_constraintTop_toBottomOf="@+id/imageView1"
+        android:contentDescription="TODO" />
+
+</android.support.constraint.ConstraintLayout>

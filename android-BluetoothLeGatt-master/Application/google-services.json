@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "20912817989",
+    "firebase_url": "https://languagelearning-17d88.firebaseio.com",
+    "project_id": "languagelearning-17d88",
+    "storage_bucket": "languagelearning-17d88.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:20912817989:android:057e92167ca9714a",
+        "android_client_info": {
+          "package_name": "com.example.android.bluetoothlegatt"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "20912817989-i5gvk4tk3ab5g1ab2dsr2vnjdannge13.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.android.bluetoothlegatt",
+            "certificate_hash": "3788a4ab1c6a6e4100f64e9390f1026574e12033"
+          }
+        },
+        {
+          "client_id": "20912817989-i596hahj33aohtppr8bupgt6taouofdr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTT9i0YAN76f-3HRrphjMo_F3TdRI5kkQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "20912817989-i596hahj33aohtppr8bupgt6taouofdr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
