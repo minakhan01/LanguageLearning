@@ -27,12 +27,13 @@ var START_CHAR = String.fromCharCode(002); //START OF TEXT CHAR
 var END_CHAR = String.fromCharCode(003);   //END OF TEXT CHAR
 
 const recognitionText = './object_recognition.txt';
-const pyScriptPath = './press_object_recognition2.py';
+const pyScriptPath = './press_object_recognition.py';
 const jsScriptPath = './firebase_upload2.js';
 
 
-var spawn = require('child_process').spawn,
-py    = spawn('python3', [pyScriptPath]),
+var cp = require('child_process'),
+python_child = cp.spawn,
+py    = python_child('python3', [pyScriptPath]),
 dataString = '';
 
 py.stdout.on('data', function(data){
@@ -41,6 +42,9 @@ py.stdout.on('data', function(data){
 });
 
 py.stdin.write(JSON.stringify(data));
+
+
+
 
 
 
@@ -96,6 +100,8 @@ var terminal = new bleno.Characteristic({
 	  		console.log("Sending: " + data);
         	updateValueCallback(new Buffer(data));
         	counter++;
+        	var firebaseUpload = cp.fork("./firebase_upload2.js",["/home/pi/training_images/firebase_image"+counter+".jpg"]);
+        	console.log('upload started');
 			});
 		  }
 		});

@@ -64,6 +64,7 @@ def main():
 		print('%s\r' % s)
 
 	with PiCamera() as camera:
+		print('Script Started')
 		# Forced sensor mode, 1640x1232, full FoV. See:
 		# https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes
 		# This is the resolution inference run on.
@@ -78,19 +79,23 @@ def main():
 
 		# Start the camera stream.
 		camera.framerate = 30
-		camera.start_preview()
-
-		with CameraInference(image_classification.model()) as inference:
+		#camera.start_preview()
+		model_type = image_classification.MOBILENET
+		counter = 0
+		with CameraInference(image_classification.model(model_type)) as inference:
 			for i, result in enumerate(inference.run()):
 				if i == args.num_frames:
 					break
 				classes = image_classification.get_classes(result)
 				if button.is_pressed:
+					counter+=1
+					camera.capture("/home/pi/training_images/firebase_image%s.jpg" % counter)
+					print('Image captured: firebase_image%s.jpg' % counter)
 					print_classes(classes, args.num_objects)
 
 					time.sleep(.5)
 
-		camera.stop_preview()
+		#camera.stop_preview()
 
 
 if __name__ == '__main__':
