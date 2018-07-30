@@ -1,9 +1,10 @@
 from picamera import PiCamera
 import time
-from gpiozero import Button
 from datetime import date 
 from datetime import datetime
 import RPi.GPIO as GPIO
+import sys
+
 
 def main():
 	def print_classes(classes, object_count):
@@ -18,10 +19,10 @@ def main():
 		print('%s\r' % s)
 
 	def firebase_upload(time):
-		camera.capture('/home/pi/training_images/%s.jpg' % time)
-		f = open('pictureName.txt','w')
-		f.write('/home/pi/training_images/'+time+'.jpg')
-		f.close()
+		camera.capture('/home/pi/NotPushedToWifi/%s.jpg' % time)
+		# f = open('pictureName.txt','w')
+		# f.write('/home/pi/training_images/'+time+'.jpg')
+		# f.close()
 		#print('Image captured:%s.jpg' % time)
 	
 
@@ -59,15 +60,19 @@ def main():
 		# classes = image_classification.get_classes(result)
 		#camera.start_preview()
 		print('camera Started')
+		sys.stdout.flush()
 		while True:
 			state = GPIO.input(pin)
 			if state == 1:
 				for i in range(10):
 					now = datetime.now()
-					local_time = now.strftime("%I-%M-%S_%d-%B-%y")
+					local_time = now.strftime("%I-%M-%S_%Y-%d-%B")
 					firebase_upload(local_time)
-					print(local_time)
+					print('image captured at:', local_time)
+					sys.stdout.flush()
 					time.sleep(1.5)
+				print('finished burst')
+				sys.stdout.flush()
 
 				
 			#print_classes(classes, args.num_objects)
