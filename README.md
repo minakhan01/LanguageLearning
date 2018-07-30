@@ -8,16 +8,13 @@ The BLE setup is necessary for the Bluetooth pipeline, but for most of the scrip
 
 #### Some documentation for packages used: 
 
-```
-| Package | Link |
-|------------ | -------------|
-| bleno | https://www.npmjs.com/package/bleno |
-| python-shell | https://www.npmjs.com/package/python-shell |
-| node-wifi | https://www.npmjs.com/package/node-wifi |
+| Package               | Link                                                         |
+| --------------------- | ------------------------------------------------------------ |
+| bleno                 | https://www.npmjs.com/package/bleno                          |
+| python-shell          | https://www.npmjs.com/package/python-shell                   |
+| node-wifi             | https://www.npmjs.com/package/node-wifi                      |
 | @google-cloud/storage | https://firebase.google.com/docs/storage/gcp-integration#apis |
-| nmcli | https://developer.gnome.org/NetworkManager/stable/nmcli.html |
-
-```
+| nmcli                 | https://developer.gnome.org/NetworkManager/stable/nmcli.html |
 
 
 
