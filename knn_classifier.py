@@ -23,21 +23,41 @@ $ pip3 install scikit-learn
 import math
 from sklearn import neighbors
 import os
-import os.path
+#import os.path
 import pickle
 from PIL import Image, ImageDraw
 import face_recognition
-from face_recognition.face_recognition_cli import image_files_in_folder
+#from face_recognition.face_recognition_cli import image_files_in_folder
 import picamera
 from pathlib import Path
 import numpy as np
 import shutil
 import RPi.GPIO as GPIO
+import time
+import threading
+from gpiozero import Button
+import sys
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
+class Unbuffered(object):
+   def __init__(self, stream):
+       self.stream = stream
+   def write(self, data):
+       self.stream.write(data)
+       self.stream.flush()
+   def writelines(self, datas):
+       self.stream.writelines(datas)
+       self.stream.flush()
+   def __getattr__(self, attr):
+       return getattr(self.stream, attr)
+sys.stdout = Unbuffered(sys.stdout)
 
-    
+sched = BackgroundScheduler()
+new_face = ''
+
 def main():
     def train(train_dir, model_save_path=None, n_neighbors=None, knn_algo='ball_tree', verbose=False):
         """
@@ -169,21 +189,77 @@ def main():
         # Display the resulting image
         pil_image.show()
 
+    def camera_loop(instance=None, state=None):
+        print("Capturing image.")
+        # Grab a single frame of video from the RPi camera as a numpy array
+        camera.capture(output, format="rgb")
+        match = []
+        person_name = ''
+        # Loop over each face found in the frame to see if it's someone we know.
+        predictions = predict(output, model_path="./trained_knn_model.clf")
+        for name, (top, right, bottom, left) in predictions:
+            print("- Found {} at ({}, {})".format(name, left, top))
+            if name=="Calvin":
+                job.pause()
+                print('job paused')
+                add_face()
 
-    def image_capture():
-        #full_file_path = os.path.join("./known_faces", image_file)
+    def add_face():
+        while True:
+            new_face = input("New face found. Would you like to add a new person? (Y/n) \n")
+            if new_face == 'Y':
+                now = datetime.now()
+                local_time = now.strftime("%I-%M-%S_%Y-%d-%B")
+                new_name = input("What is the person's name?: ")
+                path = "./unknown_faces/"+new_name+"/"
+                try:  
+                    os.mkdir(path)
+                except OSError:  
+                    print ("Creation of the directory %s failed" % path)
+                else:  
+                    print ("Successfully created the directory %s " % path)
+                for i in range(3,0,-1):
+                    print("Taking picture in: ", i)
+                    time.sleep(1)
+                camera.capture("./unknown_faces/"+new_name+"/"+new_name+"_"+local_time+".png")
+                print("Picture successfully taken")
+                break
+            elif new_face == 'n':
+                break
+            else:
+                continue
+
+    def my_listener(event):
+        pass
+        # if str(event)=="<JobExecutionEvent (code=4096)>":
+        #     print(event.retval) 
+            #job.pause()
+            #add_face(event.retval)   
+
+    def image_capture(pin):
+        counter = 0
         while True:
             state = GPIO.input(pin)
-            if state == 1:
-                print("Capturing image.")
-                # Grab a single frame of video from the RPi camera as a numpy array
-                camera.capture(output, format="rgb")
-                match = []
-                person_name = ''
-                # Loop over each face found in the frame to see if it's someone we know.
-                predictions = predict(output, model_path="./trained_knn_model.clf")
-                for name, (top, right, bottom, left) in predictions:
-                    print("- Found {} at ({}, {})".format(name, left, top))
+            if state==1 and counter==0:
+                print('detected')
+                sched.start()
+                print('job started')
+                counter+=1
+                time.sleep(.3)
+            elif state==1 and counter%2!=0:
+                print('stopped')
+                job.pause()
+                print('job stopped')
+                counter+=1
+                time.sleep(.3)
+            elif state==1 and counter%2==0 and counter!=0:
+                print('resume')
+                job.resume()
+                print('job resumed')
+                counter+=1
+                time.sleep(.3)
+
+
 
     camera = picamera.PiCamera()
     camera.resolution = (320, 240)
@@ -192,6 +268,8 @@ def main():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     state = GPIO.input(pin)
+    job = sched.add_job(camera_loop, 'interval', seconds=5, id='job_id')
+    listener = sched.add_listener(my_listener)
     # Train the KNN classifier and save it to disk
     # Once the model is trained and saved, you can skip this step next time.
 
@@ -211,7 +289,7 @@ def main():
         
     print("Training complete!")
 
-    image_capture()
+    image_capture(pin)
     
 
 
