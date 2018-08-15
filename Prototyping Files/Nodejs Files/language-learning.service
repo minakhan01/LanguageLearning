@@ -1,0 +1,12 @@
+[Unit]
+Description=Language Learning script
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+ExecStart=/usr/bin/node /home/pi/node-v8.11.3-linux-armv6l/batch_upload_wifi_connect.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
