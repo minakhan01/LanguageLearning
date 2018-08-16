@@ -61,7 +61,7 @@ model_path = "./trained_knn_model.clf"
 
 
 def main():
-    def train(train_dir, model_save_path=None, n_neighbors=None, knn_algo='ball_tree', verbose=False):
+    def train(train_dir, model_save_path=None, n_neighbors=None, knn_algo='ball_tree', verbose=False,name='unknown'):
         """
         Trains a k-nearest neighbors classifier for face recognition.
         :param train_dir: directory that contains a sub-directory for each known person, with its name.
@@ -85,26 +85,72 @@ def main():
         X = []
         y = []
 
+        try:  
+            os.makedirs("./face_embeddings/")
+            print('embeddings folder created')
+        except OSError:  
+            print(OSError)
+
         # Loop through each person in the training set
-        for class_dir in os.listdir(train_dir):
-            if not os.path.isdir(os.path.join(train_dir, class_dir)):
-                continue
+        if len(os.listdir("./face_embeddings")) == 0:
+            for class_dir in os.listdir(train_dir):
+                if not os.path.isdir(os.path.join(train_dir, class_dir)):
+                    continue
+                # Loop through each training image for the current person
+                for img_path in image_files_in_folder(os.path.join(train_dir, class_dir)):
+                    image = face_recognition.load_image_file(img_path)
+                    face_bounding_boxes = face_recognition.face_locations(image)
+                    print(img_path)
 
-            # Loop through each training image for the current person
-            for img_path in image_files_in_folder(os.path.join(train_dir, class_dir)):
-                image = face_recognition.load_image_file(img_path)
-                face_bounding_boxes = face_recognition.face_locations(image)
-                print(img_path)
+                    if len(face_bounding_boxes) != 1:
+                        # If there are no people (or too many people) in a training image, skip the image.
+                        if verbose:
+                            print("Image {} not suitable for training: {}".format(img_path, "Didn't find a face" if len(face_bounding_boxes) < 1 else "Found more than one face"))
+                    else:
+                        # Add face encoding for current image to the training set                 
+                        # np.save('./'+name+'/'+name+'.npy',X)
+                        X.append(face_recognition.face_encodings(image, known_face_locations=face_bounding_boxes)[0])
+                        y.append(class_dir)
+            np.save('./face_embeddings/encodings.npy',X,allow_pickle=False)
+            np.save('./face_embeddings/class_dir.npy',y,allow_pickle=False)
+            print('x',X)
+            print('y',y)
+        else:
+            X_temp = np.load('./face_embeddings/encodings.npy',allow_pickle=False)
+            y_temp = np.load('./face_embeddings/class_dir.npy',allow_pickle=False)
+            for embedding in X_temp:
+                X.append(embedding)
+            for name in y_temp:
+                y.append(name)
+            print('x',X)
+            print('typex',type(X))
+            print('y',y)
+            print('typey',type(y))
+            print('encodings loaded')
 
-                if len(face_bounding_boxes) != 1:
-                    # If there are no people (or too many people) in a training image, skip the image.
-                    if verbose:
-                        print("Image {} not suitable for training: {}".format(img_path, "Didn't find a face" if len(face_bounding_boxes) < 1 else "Found more than one face"))
-                else:
-                    # Add face encoding for current image to the training set
-                    X.append(face_recognition.face_encodings(image, known_face_locations=face_bounding_boxes)[0])
-                    y.append(class_dir)
-
+            if len(os.listdir("./unknown_faces")) != 0:
+                for class_dir in os.listdir("./unknown_faces"):
+                    if not os.path.isdir(os.path.join("./unknown_faces", class_dir)):
+                        continue
+                    # Loop through each training image for the current person
+                    for img_path in image_files_in_folder(os.path.join("./unknown_faces", class_dir)):
+                        image = face_recognition.load_image_file(img_path)
+                        face_bounding_boxes = face_recognition.face_locations(image)
+                        print(img_path)
+                        if len(face_bounding_boxes) != 1:
+                            # If there are no people (or too many people) in a training image, skip the image.
+                            if verbose:
+                                print("Image {} not suitable for training: {}".format(img_path, "Didn't find a face" if len(face_bounding_boxes) < 1 else "Found more than one face"))
+                        else:
+                            # Add face encoding for current image to the training set                 
+                            X.append(face_recognition.face_encodings(image, known_face_locations=face_bounding_boxes)[0])
+                            y.append(class_dir)
+                np.save('./face_embeddings/encodings.npy',X)
+                np.save('./face_embeddings/class_dir.npy',y)
+                print('new encodings saved')
+                print('x',X)
+                print('y',y)
+            
         # Determine how many neighbors to use for weighting in the KNN classifier
         if n_neighbors is None:
             n_neighbors = int(round(math.sqrt(len(X))))
@@ -144,6 +190,7 @@ def main():
                     # Add face encoding for current image to the training set
                     X.append(face_recognition.face_encodings(image, known_face_locations=face_bounding_boxes)[0])
                     y.append(class_dir)
+
 
         # Determine how many neighbors to use for weighting in the KNN classifier
         if n_neighbors is None:
@@ -270,10 +317,10 @@ def main():
                     local_time = now.strftime("%I-%M-%S_%Y-%d-%B")
                     camera.capture("./unknown_faces/"+new_name+"/"+new_name+"_"+local_time+".png")
                     time.sleep(1)
-                print("Picture successfully taken")
-                if len(os.listdir("./unknown_faces")) == 1:
-                    move_files()
-                    classifier = train("./known_faces")
+                    print("Picture successfully taken")
+                # if len(os.listdir("./unknown_faces")) == 1:
+                #     move_files()
+                #     classifier = train("./unknown_faces",name=new_name)
                 break
             elif new_face == 'n':
                 print('Person not added')
@@ -337,8 +384,8 @@ def main():
 
     my_file = Path(model_path)
     if len(os.listdir("./unknown_faces")) != 0:
-        move_files() 
-        classifier = train("./known_faces", model_save_path=model_path, n_neighbors=2)    
+        classifier = train("./unknown_faces", model_save_path=model_path, n_neighbors=2)
+        move_files()     
     print("Training complete!")
     image_capture(pin)
     
