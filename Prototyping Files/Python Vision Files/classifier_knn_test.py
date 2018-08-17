@@ -89,9 +89,11 @@ def main():
             os.makedirs("./face_embeddings/")
             print('embeddings folder created')
         except OSError:  
-            print(OSError)
+            pass
 
         # Loop through each person in the training set
+        t0 = time.time()
+        print('embeddings created')
         if len(os.listdir("./face_embeddings")) == 0:
             for class_dir in os.listdir(train_dir):
                 if not os.path.isdir(os.path.join(train_dir, class_dir)):
@@ -100,7 +102,7 @@ def main():
                 for img_path in image_files_in_folder(os.path.join(train_dir, class_dir)):
                     image = face_recognition.load_image_file(img_path)
                     face_bounding_boxes = face_recognition.face_locations(image)
-                    print(img_path)
+                    print(img_path, time.time())
 
                     if len(face_bounding_boxes) != 1:
                         # If there are no people (or too many people) in a training image, skip the image.
@@ -113,9 +115,11 @@ def main():
                         y.append(class_dir)
             np.save('./face_embeddings/encodings.npy',X,allow_pickle=False)
             np.save('./face_embeddings/class_dir.npy',y,allow_pickle=False)
-            print('x',X)
-            print('y',y)
+            t1 = time.time()
+            print('training time elapsed: ',t1-t0)
         else:
+            t2 = time.time()
+            print('loading embeddings',t2)
             X_temp = np.load('./face_embeddings/encodings.npy',allow_pickle=False)
             y_temp = np.load('./face_embeddings/class_dir.npy',allow_pickle=False)
             for embedding in X_temp:
@@ -126,7 +130,8 @@ def main():
             print('typex',type(X))
             print('y',y)
             print('typey',type(y))
-            print('encodings loaded')
+            t3 = time.time()
+            print('encodings loaded',t3)
 
             if len(os.listdir("./unknown_faces")) != 0:
                 for class_dir in os.listdir("./unknown_faces"):
@@ -287,7 +292,10 @@ def main():
         match = []
         person_name = ''
         # Loop over each face found in the frame to see if it's someone we know.
+        t4 = time.time()
         predictions = predict(output, model_path=model_path)
+        t5 = time.time()
+        print('prediction time elapsed: ',t5-t4)
         for name, (top, right, bottom, left) in predictions:
             print("- Found {} at ({}, {})".format(name, left, top))
             if name=="unknown":
