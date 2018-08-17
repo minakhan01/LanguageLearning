@@ -19,6 +19,7 @@ Usage:
 NOTE: This example requires scikit-learn to be installed! You can install it with pip:
 $ pip3 install scikit-learn
 """
+import time
 
 import math
 from sklearn import neighbors
@@ -33,7 +34,7 @@ from pathlib import Path
 import numpy as np
 import shutil
 import RPi.GPIO as GPIO
-import time
+
 import threading
 from gpiozero import Button
 import sys
@@ -61,6 +62,7 @@ model_path = "./trained_knn_model.clf"
 
 
 def main():
+    t8 = time.time()
     def train(train_dir, model_save_path=None, n_neighbors=None, knn_algo='ball_tree', verbose=False,name='unknown'):
         """
         Trains a k-nearest neighbors classifier for face recognition.
@@ -93,15 +95,19 @@ def main():
 
         # Loop through each person in the training set
         t0 = time.time()
-        print('embeddings created')
+        print('creating embeddings')
         if len(os.listdir("./face_embeddings")) == 0:
             for class_dir in os.listdir(train_dir):
                 if not os.path.isdir(os.path.join(train_dir, class_dir)):
                     continue
                 # Loop through each training image for the current person
                 for img_path in image_files_in_folder(os.path.join(train_dir, class_dir)):
+                    
                     image = face_recognition.load_image_file(img_path)
+                    t9 = time.time()
                     face_bounding_boxes = face_recognition.face_locations(image)
+                    t10 = time.time()
+                    print('loading + face detect',t10-t9)
                     print(img_path, time.time())
 
                     if len(face_bounding_boxes) != 1:
@@ -116,22 +122,18 @@ def main():
             np.save('./face_embeddings/encodings.npy',X,allow_pickle=False)
             np.save('./face_embeddings/class_dir.npy',y,allow_pickle=False)
             t1 = time.time()
-            print('training time elapsed: ',t1-t0)
+            print('embedding creation time elapsed: ',t1-t0)
         else:
             t2 = time.time()
-            print('loading embeddings',t2)
+            print('loading embeddings')
             X_temp = np.load('./face_embeddings/encodings.npy',allow_pickle=False)
             y_temp = np.load('./face_embeddings/class_dir.npy',allow_pickle=False)
             for embedding in X_temp:
                 X.append(embedding)
             for name in y_temp:
                 y.append(name)
-            print('x',X)
-            print('typex',type(X))
-            print('y',y)
-            print('typey',type(y))
             t3 = time.time()
-            print('encodings loaded',t3)
+            print('embeddings loaded: ',t3-t2)
 
             if len(os.listdir("./unknown_faces")) != 0:
                 for class_dir in os.listdir("./unknown_faces"):
@@ -144,6 +146,7 @@ def main():
                         print(img_path)
                         if len(face_bounding_boxes) != 1:
                             # If there are no people (or too many people) in a training image, skip the image.
+                            print('No person found or too many people in image')
                             if verbose:
                                 print("Image {} not suitable for training: {}".format(img_path, "Didn't find a face" if len(face_bounding_boxes) < 1 else "Found more than one face"))
                         else:
@@ -162,6 +165,7 @@ def main():
             if verbose:
                 print("Chose n_neighbors automatically:", n_neighbors)
 
+        t5 = time.time()
         # Create and train the KNN classifier
         knn_clf = neighbors.KNeighborsClassifier(n_neighbors=n_neighbors, algorithm=knn_algo, weights='distance')
         knn_clf.fit(X, y)
@@ -170,7 +174,8 @@ def main():
         if model_save_path is not None:
             with open(model_save_path, 'wb') as f:
                 pickle.dump(knn_clf, f)
-        print('Successfully trained')
+        t6 = time.time()
+        print('Successfully trained knn, time elapsed: ', t6-t5)
         return knn_clf
 
     def train_version2(train_dir, model_save_path=None, n_neighbors=None, knn_algo='ball_tree', verbose=False):
@@ -326,9 +331,9 @@ def main():
                     camera.capture("./unknown_faces/"+new_name+"/"+new_name+"_"+local_time+".png")
                     time.sleep(1)
                     print("Picture successfully taken")
-                # if len(os.listdir("./unknown_faces")) == 1:
-                #     move_files()
-                #     classifier = train("./unknown_faces",name=new_name)
+                if len(os.listdir("./unknown_faces")) == 1:
+                    classifier = train("./unknown_faces",name=new_name, model_save_path=model_path)
+                    move_files()
                 break
             elif new_face == 'n':
                 print('Person not added')
@@ -376,8 +381,9 @@ def main():
                 # print(os.path.join(directory, filename))
             print('All files moved')
 
-
-
+    t9 = time.time()
+    print('imports + functions: ',t9-t8)
+    t7 = time.time()
     camera = picamera.PiCamera()
     camera.resolution = (320, 240)
     output = np.empty((240, 320, 3), dtype=np.uint8)
@@ -386,11 +392,12 @@ def main():
     GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     state = GPIO.input(pin)
     job = sched.add_job(camera_loop, 'interval', seconds=5, id='job_id')
-    listener = sched.add_listener(my_listener)
+    # listener = sched.add_listener(my_listener)
     # Train the KNN classifier and save it to disk
     # Once the model is trained and saved, you can skip this step next time.
+    t8 = time.time()
+    print('everything loaded',t8-t7)
 
-    my_file = Path(model_path)
     if len(os.listdir("./unknown_faces")) != 0:
         classifier = train("./unknown_faces", model_save_path=model_path, n_neighbors=2)
         move_files()     
