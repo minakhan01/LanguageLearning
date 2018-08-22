@@ -4,8 +4,7 @@ var fs = require('fs');
 var path = require( 'path' );
 var process = require( "process" );
 
-// const pyScriptPath = './burst_capture.py'; 
-const pyScriptPath = './print.py'
+const pyScriptPath = './burst_capture.py'; 
 const pictureName = 'pictureName.txt';
 
 var PythonShell = require('python-shell');
@@ -14,6 +13,8 @@ var pyshell = new PythonShell(pyScriptPath);
 var moveFrom = "/home/pi/NotPushedToWifi";
 var moveTo = "/home/pi/PushedToWifi"
 
+var wifi = require('node-wifi');
+ 
 // Enable Storage
 var gcs = gcloud({
   projectId: 'languagelearning-17d88',
@@ -23,37 +24,74 @@ var gcs = gcloud({
 // Reference an existing bucket.
 var bucket = gcs.bucket('languagelearning-17d88.appspot.com');
 
-console.log('script started');
-// Upload a local file to a new file to be created in your bucket.
-// var data = process.argv.slice(2);
+// Initialize wifi module
+// Absolutely necessary even to set interface to null
+wifi.init({
+    iface : 'wlan0' // network interface, choose a random wifi interface if set to null
+});
 
+wifiDisconnect();
+
+console.log('Script started')
+
+var networkArray = [
+    {
+      'ssid': "fluid",
+      'password': "fluidinterfaces"
+    },
+    {
+      'ssid': "Avengers",
+      'password': "1AAddMV*"
+    },
+    {
+      'ssid': "MIT",
+      'password': ""
+    },
+    {
+      'ssid': "joy",
+      'password': "billoSana"
+    }
+    ];
+
+var networkLength = networkArray.length;
+var connected = 'false';
 
 pyshell.on('message', function (message) {
   // received a message sent from the Python script (a simple "print" statement)
   console.log(message);
-  if (message == 'py started'){
-  	console.log('true');
-  	checkInternet(function(isConnected) {
-    if (isConnected) {
-        console.log('connected');
-        moveFiles();
-        // connected to the internet
-    } else {
-        console.log('not connected');
-        // not connected to the internet
-      }
-    });
+  if (message == 'finished burst'){
+    console.log('finished taking pictures');
+      if (connected == 'true') {
+          console.log('connected, uploading files');
+          moveFiles();
+          // connected to the internet
+      } else {
+          console.log('not connected, attempting to connect');
+          // not connected to the internet
+          try{
+            for (var i = 0; i < networkLength; i++){
+              if (connected == 'false'){
+                console.log(networkArray[i]['ssid']);
+                connected = wifiConnect(networkArray[i]);
+                console.log('reconnected');
+              }
+            };
+            moveFiles()
+          }
+          catch(err){
+            console.log(err);
+          }
+        }
   }else{
-  	console.log('false');
+    console.log('not finished taking pics');
   }
 });
-
 
 function firebase_upload(fileName){
    bucket.upload(fileName, function(err, file) {
    if (err) {
-    	return console.log(err);
- 		}
+      return console.log(err);
+    }
    });
    console.log('upload finished');
 }
@@ -70,9 +108,9 @@ function checkInternet(cb) {
 }
 
 
-// Loop through all the files in the temp directory
+// Loop through all the files in the temp directory and move files from fromPath to toPath
 function moveFiles(){
-	fs.readdir(moveFrom, function( err, files ) {
+  fs.readdir(moveFrom, function( err, files ) {
             if( err ) {
                 console.error( "Could not list the directory.", err );
                 process.exit( 1 );
@@ -80,15 +118,15 @@ function moveFiles(){
             files.forEach(function(file, index){
                 var toPath = path.join( moveTo, file );
                 var fromPath = path.join( moveFrom, file );
-            	firebase_upload(fromPath);
+              firebase_upload(fromPath);
             });
-	});
+  });
     fs.readdir( moveFrom, function( err, files ) {
             files.forEach( function( file, index ) {
                     // Make one pass and make the file complete
                     var fromPath = path.join( moveFrom, file );
                     var toPath = path.join( moveTo, file );
-					
+          
                     fs.stat( fromPath, function( error, stat ) {
                         if( error ) {
                             console.error( "Error stating file.", error );
@@ -96,9 +134,9 @@ function moveFiles(){
                         }
 
                         if( stat.isFile() ){
-                        	console.log('filename is:', file);
-                        	
-                            console.log( "'%s' is a file.", fromPath );                        	
+                          console.log('filename is:', file);
+                          
+                            console.log( "'%s' is a file.", fromPath );                         
                         }
                         else if( stat.isDirectory() ){
                             console.log( "'%s' is a directory.", fromPath );
@@ -117,32 +155,25 @@ function moveFiles(){
     } );
 }
 
-// // end the input stream and allow the process to exit
-// pyshell.end(function (err,code,signal) {
-//   if (err) throw err;
-//   console.log('The exit code was: ' + code);
-//   console.log('The exit signal was: ' + signal);
-//   console.log('finished');
-//   console.log('finished');
-// });
+function wifiDisconnect(){
+  wifi.disconnect(function(err) {
+    if (err) {
+        console.log(err);
+    }
+    console.log('Disconnected');
+  });
+};
 
-/*Here we are saying that every time our node application receives 
-data from the python process output stream(on 'data'), we want to 
-convert that received data into a string and append it to the overall dataString.*/
-// py.stdout.on('data', function(data){
-//     dataString += data.toString();    
-//     console.log('Uploading File:',dataString);
-// 	//var data = "firebase_image1.jpg";
-
-
-// });
-
-/*Once the stream is done (on 'end') we want to simply log the received data to the console.*/
-
-
-// py.stdin.end();
-
-// // Download a file from your bucket.
-// bucket.file('giraffe.jpg').download({
-//   destination: '/photos/zoo/giraffe.jpg'
-// }, function(err) {});
+function wifiConnect(ap){
+  // Connect to a network
+  if(connected=='false'){
+      wifi.connect(ap, function(err) {
+      if (err) {
+          console.log(err);
+      }
+      console.log('Connected');
+      connected = 'true';
+      return 'true';
+    });
+  }
+};

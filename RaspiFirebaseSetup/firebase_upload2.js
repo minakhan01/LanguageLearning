@@ -1,7 +1,6 @@
 // Require gcloud
 var gcloud = require('@google-cloud/storage');
 
-
 // Enable Storage
 var gcs = gcloud({
   projectId: 'languagelearning-17d88',

@@ -7,17 +7,9 @@ import sys
 
 
 def main():
-	def print_classes(classes, object_count):
-		s = ''
-		for index, (obj, prob) in enumerate(classes):
-			if index > object_count - 1:
-				break
-			s += '%s=%1.2f\t|\t' % (obj, prob)
-		f = open('./object_recognition.txt','w')
-		f.write(s)
-		f.close()
-		print('%s\r' % s)
-
+	"""
+	Takes a burst of images on button press
+	"""
 	def firebase_upload(time):
 		camera.capture('/home/pi/NotPushedToWifi/%s.jpg' % time)
 		# f = open('pictureName.txt','w')
@@ -27,7 +19,6 @@ def main():
 	
 
 	with PiCamera() as camera:
-		#print('Script Started')
 		pin = 24
 		#button = Button(23)
 		# Forced sensor mode, 1640x1232, full FoV. See:
@@ -49,13 +40,6 @@ def main():
 		GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 		state = GPIO.input(pin)
 
-		#local_time = time.asctime( time.localtime(time.time()) )
-		#today = date.today()
-		
-		
-		#local_time = hms + "_" + today
-
-		# model_type = image_classification.MOBILENET
 		# state = GPIO.input(pin)
 		# classes = image_classification.get_classes(result)
 		#camera.start_preview()
@@ -73,11 +57,7 @@ def main():
 					time.sleep(1.5)
 				print('finished burst')
 				sys.stdout.flush()
-
-				
-			#print_classes(classes, args.num_objects)
 		#camera.stop_preview()
-
 			
 
 if __name__ == '__main__':

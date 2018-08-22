@@ -1,0 +1,362 @@
+"""
+This is an example of using the k-nearest-neighbors (KNN) algorithm for face recognition.
+When should I use this example?
+This example is useful when you wish to recognize a large set of known people,
+and make a prediction for an unknown person in a feasible computation time.
+Algorithm Description:
+The knn classifier is first trained on a set of labeled (known) faces and can then predict the person
+in an unknown image by finding the k most similar faces (images with closet face-features under eucledian distance)
+in its training set, and performing a majority vote (possibly weighted) on their label.
+For example, if k=3, and the three closest face images to the given image in the training set are one image of Biden
+and two images of Obama, The result would be 'Obama'.
+* This implementation uses a weighted vote, such that the votes of closer-neighbors are weighted more heavily.
+Usage:
+1. Prepare a set of images of the known people you want to recognize. Organize the images in a single directory
+   with a sub-directory for each known person.
+2. Then, call the 'train' function with the appropriate parameters. Make sure to pass in the 'model_save_path' if you
+   want to save the model to disk so you can re-use the model without having to re-train it.
+3. Call 'predict' and pass in your trained model to recognize the people in an unknown image.
+NOTE: This example requires scikit-learn to be installed! You can install it with pip:
+$ pip3 install scikit-learn
+"""
+import time
+import math
+from sklearn import neighbors
+import os
+import pickle
+from PIL import Image, ImageDraw
+import face_recognition
+from face_recognition.face_recognition_cli import image_files_in_folder
+import picamera
+from pathlib import Path
+import numpy as np
+import shutil
+import RPi.GPIO as GPIO
+
+import threading
+from gpiozero import Button
+import sys
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+class Unbuffered(object):
+   def __init__(self, stream):
+       self.stream = stream
+   def write(self, data):
+       self.stream.write(data)
+       self.stream.flush()
+   def writelines(self, datas):
+       self.stream.writelines(datas)
+       self.stream.flush()
+   def __getattr__(self, attr):
+       return getattr(self.stream, attr)
+sys.stdout = Unbuffered(sys.stdout)
+
+sched = BackgroundScheduler()
+new_face = ''
+model_path = "./trained_knn_model.clf"
+
+
+def main():
+    def train(train_dir, model_save_path=None, n_neighbors=None, knn_algo='ball_tree', verbose=False,name='unknown'):
+        """
+        Trains a k-nearest neighbors classifier for face recognition.
+        :param train_dir: directory that contains a sub-directory for each known person, with its name.
+         (View in source code to see train_dir example tree structure)
+         Structure:
+            <train_dir>/
+            ├── <person1>/
+            │   ├── <somename1>.jpeg
+            │   ├── <somename2>.jpeg
+            │   ├── ...
+            ├── <person2>/
+            │   ├── <somename1>.jpeg
+            │   └── <somename2>.jpeg
+            └── ...
+        :param model_save_path: (optional) path to save model on disk
+        :param n_neighbors: (optional) number of neighbors to weigh in classification. Chosen automatically if not specified
+        :param knn_algo: (optional) underlying data structure to support knn.default is ball_tree
+        :param verbose: verbosity of training
+        :return: returns knn classifier that was trained on the given data.
+        """
+        X = []
+        y = []
+
+        try:  
+            os.makedirs("./face_embeddings/")
+            print('embeddings folder created')
+        except OSError:  
+            pass
+
+        # Loop through each person in the training set
+        t0 = time.time()
+        print('creating embeddings')
+        if len(os.listdir("./face_embeddings")) == 0:
+            for class_dir in os.listdir(train_dir):
+                if not os.path.isdir(os.path.join(train_dir, class_dir)):
+                    continue
+                # Loop through each training image for the current person
+                for img_path in image_files_in_folder(os.path.join(train_dir, class_dir)):
+                    
+                    image = face_recognition.load_image_file(img_path)
+                    t9 = time.time()
+                    face_bounding_boxes = face_recognition.face_locations(image)
+                    t10 = time.time()
+                    print('loading + face detect',t10-t9)
+                    print(img_path, time.time())
+
+                    if len(face_bounding_boxes) != 1:
+                        # If there are no people (or too many people) in a training image, skip the image.
+                        if verbose:
+                            print("Image {} not suitable for training: {}".format(img_path, "Didn't find a face" if len(face_bounding_boxes) < 1 else "Found more than one face"))
+                    else:
+                        # Add face encoding for current image to the training set                 
+                        X.append(face_recognition.face_encodings(image, known_face_locations=face_bounding_boxes)[0])
+                        y.append(class_dir)
+            # Save the face embeddings and just load them next time in so they don't have to be created every time
+            np.save('./face_embeddings/encodings.npy',X,allow_pickle=False)
+            np.save('./face_embeddings/class_dir.npy',y,allow_pickle=False)
+            t1 = time.time()
+            print('embedding creation time elapsed: ',t1-t0)
+        else:
+            t2 = time.time()
+            print('loading embeddings')
+            X_temp = np.load('./face_embeddings/encodings.npy',allow_pickle=False)
+            y_temp = np.load('./face_embeddings/class_dir.npy',allow_pickle=False)
+            for embedding in X_temp:
+                X.append(embedding)
+            for name in y_temp:
+                y.append(name)
+            t3 = time.time()
+            print('embeddings loaded: ',t3-t2)
+
+            if len(os.listdir("./unknown_faces")) != 0:
+                for class_dir in os.listdir("./unknown_faces"):
+                    if not os.path.isdir(os.path.join("./unknown_faces", class_dir)):
+                        continue
+                    # Loop through each training image for the current person
+                    for img_path in image_files_in_folder(os.path.join("./unknown_faces", class_dir)):
+                        image = face_recognition.load_image_file(img_path)
+                        face_bounding_boxes = face_recognition.face_locations(image)
+                        print(img_path)
+                        if len(face_bounding_boxes) != 1:
+                            # If there are no people (or too many people) in a training image, skip the image.
+                            print('No person found or too many people in image')
+                            if verbose:
+                                print("Image {} not suitable for training: {}".format(img_path, "Didn't find a face" if len(face_bounding_boxes) < 1 else "Found more than one face"))
+                        else:
+                            # Add face encoding for current image to the training set                 
+                            X.append(face_recognition.face_encodings(image, known_face_locations=face_bounding_boxes)[0])
+                            y.append(class_dir)
+                np.save('./face_embeddings/encodings.npy',X)
+                np.save('./face_embeddings/class_dir.npy',y)
+                print('new encodings saved')
+                print('x',X)
+                print('y',y)
+            
+        # Determine how many neighbors to use for weighting in the KNN classifier
+        if n_neighbors is None:
+            n_neighbors = int(round(math.sqrt(len(X))))
+            if verbose:
+                print("Chose n_neighbors automatically:", n_neighbors)
+
+        t5 = time.time()
+        # Create and train the KNN classifier
+        knn_clf = neighbors.KNeighborsClassifier(n_neighbors=n_neighbors, algorithm=knn_algo, weights='distance')
+        knn_clf.fit(X, y)
+
+        # Save the trained KNN classifier
+	    # Once the model is trained and saved, you can skip this step next time.
+        if model_save_path is not None:
+            with open(model_save_path, 'wb') as f:
+                pickle.dump(knn_clf, f)
+        t6 = time.time()
+        print('Successfully trained knn, time elapsed: ', t6-t5)
+        return knn_clf             
+
+    def predict(output, knn_clf=None, model_path=None, distance_threshold=0.55):
+        """
+        Recognizes faces in given image using a trained KNN classifier
+        :param X_img_path: path to image to be recognized
+        :param knn_clf: (optional) a knn classifier object. if not specified, model_save_path must be specified.
+        :param model_path: (optional) path to a pickled knn classifier. if not specified, model_save_path must be knn_clf.
+        :param distance_threshold: (optional) distance threshold for face classification. the larger it is, the more chance
+               of mis-classifying an unknown person as a known one.
+        :return: a list of names and face locations for the recognized faces in the image: [(name, bounding box), ...].
+            For faces of unrecognized persons, the name 'unknown' will be returned.
+        """
+        # if not os.path.isfile(X_img_path) or os.path.splitext(X_img_path)[1][1:] not in ALLOWED_EXTENSIONS:
+        #     raise Exception("Invalid image path: {}".format(X_img_path))
+
+        if knn_clf is None and model_path is None:
+            raise Exception("Must supply knn classifier either through knn_clf or model_path")
+
+        # Load a trained KNN model (if one was passed in)
+        if knn_clf is None:
+            with open(model_path, 'rb') as f:
+                knn_clf = pickle.load(f)
+
+        X_face_locations = face_recognition.face_locations(output)
+
+        # If no faces are found in the image, return an empty result.
+        if len(X_face_locations) == 0:
+            return []
+
+        # Find encodings for faces in the test iamge
+        faces_encodings = face_recognition.face_encodings(output, known_face_locations=X_face_locations)
+
+        # Use the KNN model to find the best matches for the test face
+        closest_distances = knn_clf.kneighbors(faces_encodings, n_neighbors=1)
+        are_matches = [closest_distances[0][i][0] <= distance_threshold for i in range(len(X_face_locations))]
+
+        # Predict classes and remove classifications that aren't within the threshold
+        return [(pred, loc) if rec else ("unknown", loc) for pred, loc, rec in zip(knn_clf.predict(faces_encodings), X_face_locations, are_matches)]
+
+
+    def show_prediction_labels_on_image(img_path, predictions):
+        """
+        Shows the face recognition results visually.
+        :param img_path: path to image to be recognized
+        :param predictions: results of the predict function
+        :return:
+        """
+        pil_image = Image.open(img_path).convert("RGB")
+        draw = ImageDraw.Draw(pil_image)
+
+        for name, (top, right, bottom, left) in predictions:
+            # Draw a box around the face using the Pillow module
+            draw.rectangle(((left, top), (right, bottom)), outline=(0, 0, 255))
+
+            # There's a bug in Pillow where it blows up with non-UTF-8 text
+            # when using the default bitmap font
+            name = name.encode("UTF-8")
+
+            # Draw a label with a name below the face
+            text_width, text_height = draw.textsize(name)
+            draw.rectangle(((left, bottom - text_height - 10), (right, bottom)), fill=(0, 0, 255), outline=(0, 0, 255))
+            draw.text((left + 6, bottom - text_height - 5), name, fill=(255, 255, 255, 255))
+
+        # Remove the drawing library from memory as per the Pillow docs
+        del draw
+
+        # Display the resulting image
+        pil_image.show()
+
+    def camera_loop(instance=None, state=None):
+        print("Capturing image.")
+        # Grab a single frame of video from the RPi camera as a numpy array
+        camera.capture(output, format="rgb")
+        match = []
+        person_name = ''
+        # Loop over each face found in the frame to see if it's someone we know.
+        t4 = time.time()
+        predictions = predict(output, model_path=model_path)
+        t5 = time.time()
+        print('prediction time elapsed: ',t5-t4)
+        for name, (top, right, bottom, left) in predictions:
+            print("- Found {} at ({}, {})".format(name, left, top))
+            if name=="unknown":
+                job.pause()
+                print('job paused')
+                add_face()
+
+    def add_face():
+        while True:
+            new_face = input("New face found. Would you like to add a new person? (Y/n) \n")
+            if new_face == 'Y':
+                now = datetime.now()
+                local_time = now.strftime("%I-%M-%S_%Y-%d-%B")
+                new_name = input("What is the person's name?: ")
+                path = "./unknown_faces/"+new_name+"/"
+                try:  
+                    os.mkdir(path)
+                except OSError:  
+                    print ("Creation of the directory %s failed" % path)
+                else:  
+                    print ("Successfully created the directory %s " % path)
+                for i in range(3,0,-1):
+                    print("Taking picture in: ", i)
+                    time.sleep(1)
+                for i in range(3):
+                    now = datetime.now()
+                    local_time = now.strftime("%I-%M-%S_%Y-%d-%B")
+                    camera.capture("./unknown_faces/"+new_name+"/"+new_name+"_"+local_time+".png")
+                    time.sleep(1)
+                    print("Picture successfully taken")
+                if len(os.listdir("./unknown_faces")) == 1:
+                    classifier = train("./unknown_faces",name=new_name, model_save_path=model_path)
+                    move_files()
+                break
+            elif new_face == 'n':
+                print('Person not added')
+                break
+            else:
+                continue
+
+    def my_listener(event):
+        pass
+        # Pass in event to perform action. It's asynchronous so will just listen for anytime a job executes.
+        # if str(event)=="<JobExecutionEvent (code=4096)>":
+        #     print(event.retval) 
+            #job.pause()
+            #add_face(event.retval)   
+
+    def image_capture(pin):
+        counter = 0
+        while True:
+            state = GPIO.input(pin)
+            if state==1 and counter==0:
+                sched.start()
+                print('job started')
+                counter+=1
+                time.sleep(.3)
+            elif state==1 and counter%2!=0:
+                job.pause()
+                print('job stopped')
+                counter+=1
+                time.sleep(.3)
+            elif state==1 and counter%2==0 and counter!=0:
+                job.resume()
+                print('job resumed')
+                counter+=1
+                time.sleep(.3)
+
+    def move_files():
+        print("Training KNN classifier...")
+        if len(os.listdir("./unknown_faces")) == 0:
+            print("Directory is empty")
+            print('Model already exists')
+        else:
+            unknown = os.listdir("./unknown_faces")
+            destination = "./known_faces"
+            for f in unknown:
+                shutil.move("./unknown_faces"+'/'+f, destination)
+                # print(os.path.join(directory, filename))
+            print('All files moved')
+
+    t7 = time.time()
+    camera = picamera.PiCamera()
+    camera.resolution = (320, 240)
+    output = np.empty((240, 320, 3), dtype=np.uint8)
+    pin = 24
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    state = GPIO.input(pin)
+    job = sched.add_job(camera_loop, 'interval', seconds=5, id='job_id')
+    # listener = sched.add_listener(my_listener)
+
+    t8 = time.time()
+    print('Script loaded',t8-t7)
+
+    if len(os.listdir("./unknown_faces")) != 0:
+        classifier = train("./unknown_faces", model_save_path=model_path, n_neighbors=2)
+        move_files()     
+    print("Training complete!")
+    image_capture(pin)
+    
+
+
+if __name__ == "__main__":
+    main()

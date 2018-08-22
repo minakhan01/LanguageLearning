@@ -85,24 +85,13 @@ def main():
 
 		model_type = image_classification.MOBILENET
 		counter = 0
-		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(pin, GPIO.IN)
-		state = GPIO.input(pin)
-		print(state)
-
 
 		with CameraInference(image_classification.model(model_type)) as inference:
 			for i, result in enumerate(inference.run()):
-				state = GPIO.input(pin)
-				print(state)
 				if i == args.num_frames:
 					break
 				classes = image_classification.get_classes(result)
 
-				if state == 1:
-					camera.capture('/home/pi/training_images/test_image%s.jpg' % counter)
-					counter+=1
-					print("Image captured, named test_ image%s.jpg"%counter)
 				if button.is_pressed:
 					#print_classes(classes, args.num_objects)
 					camera.capture('/home/pi/training_images/test_image%s.jpg' % counter)

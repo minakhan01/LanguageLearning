@@ -33,7 +33,7 @@ import picamera
 from pathlib import Path
 import numpy as np
 import shutil
-import RPi.GPIO as GPIO
+from gpiozero import Button
 
 import threading
 from gpiozero import Button
@@ -60,9 +60,17 @@ sched = BackgroundScheduler()
 new_face = ''
 model_path = "./trained_knn_model.clf"
 
-
 def main():
     t8 = time.time()
+    def check_folders():
+        try: 
+            if not (os.path.isdir("/home/pi/face_recognition/unknown_faces")):
+                os.mkdir("/home/pi/face_recognition/unknown_faces")
+            if not (os.path.isdir("/home/pi/face_recognition/known_faces")):
+                os.mkdir("/home/pi/face_recognition/unknown_faces")
+        except:
+            pass
+
     def train(train_dir, model_save_path=None, n_neighbors=None, knn_algo='ball_tree', verbose=False,name='unknown'):
         """
         Trains a k-nearest neighbors classifier for face recognition.
@@ -348,21 +356,20 @@ def main():
             #job.pause()
             #add_face(event.retval)   
 
-    def image_capture(pin):
+    def image_capture(button):
         counter = 0
         while True:
-            state = GPIO.input(pin)
-            if state==1 and counter==0:
+            if button.is_pressed and counter==0:
                 sched.start()
                 print('job started')
                 counter+=1
                 time.sleep(.3)
-            elif state==1 and counter%2!=0:
+            elif button.is_pressed and counter%2!=0:
                 job.pause()
                 print('job stopped')
                 counter+=1
                 time.sleep(.3)
-            elif state==1 and counter%2==0 and counter!=0:
+            elif button.is_pressed and counter%2==0 and counter!=0:
                 job.resume()
                 print('job resumed')
                 counter+=1
@@ -387,10 +394,8 @@ def main():
     camera = picamera.PiCamera()
     camera.resolution = (320, 240)
     output = np.empty((240, 320, 3), dtype=np.uint8)
-    pin = 24
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    state = GPIO.input(pin)
+    button = Button(23)
+    check_folders()
     job = sched.add_job(camera_loop, 'interval', seconds=5, id='job_id')
     # listener = sched.add_listener(my_listener)
     # Train the KNN classifier and save it to disk
@@ -402,7 +407,8 @@ def main():
         classifier = train("./unknown_faces", model_save_path=model_path, n_neighbors=2)
         move_files()     
     print("Training complete!")
-    image_capture(pin)
+
+    image_capture(button)
     
 
 
