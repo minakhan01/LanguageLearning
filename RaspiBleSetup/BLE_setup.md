@@ -76,5 +76,11 @@ http://www.instructables.com/id/Install-Nodejs-and-Npm-on-Raspberry-Pi/
 
 The bluetooth system service needs to be disabled for bleno to work, otherwise some operations will just fail silently. This is quite easy to miss.  
 `sudo service bluetooth stop`  
-`sudo hciconfig hci0 up # reactivate hci0 or another hciX you want to use`  
+`sudo hciconfig hci0 up # reactivate hci0 or another hciX you want to use` 
+`wget https://nodejs.org/dist/v8.9.0/node-v8.9.0-linux-armv6l.tar.gz`
+`tar -xzf node-v8.9.0-linux-armv6l.tar.gz`
+`cd node-v8.9.0-linux-armv6l/`
+`sudo cp -R * /usr/local/`
+`node -v`
+`npm -v`
 `npm install bleno --save`
