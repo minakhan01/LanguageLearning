@@ -2,6 +2,8 @@
 
 #### Getting Started
 
+Before installing any of the libraries below, please install node by referring to [raspi_node_installation.md](https://github.com/minakhan01/LanguageLearning/blob/master/raspi_node_installation.md)
+
 Depending on the libraries that you need to setup, you can refer to each of the relevant installation guides:   
 
 1. BLE setup ~3 hours
