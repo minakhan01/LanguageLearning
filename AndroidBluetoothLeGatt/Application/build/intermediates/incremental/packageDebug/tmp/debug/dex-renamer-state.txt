@@ -1,13 +1,4 @@
-#Fri Jul 06 15:04:41 EDT 2018
-path.3=classes.dex
-path.2=classes.dex
-path.1=classes.dex
+#Fri Aug 31 15:47:58 EDT 2018
+base.0=/home/calvin/Documents/Github/LanguageLearning/AndroidBluetoothLeGatt/Application/build/intermediates/transforms/dexMerger/debug/17
 path.0=classes.dex
-renamed.3=classes4.dex
-renamed.2=classes3.dex
-renamed.1=classes2.dex
 renamed.0=classes.dex
-base.3=C\:\\Users\\mitadm\\Downloads\\Fluid Interfaces\\android-BluetoothLeGatt-master2\\android-BluetoothLeGatt-master\\Application\\build\\intermediates\\transforms\\dexMerger\\debug\\46
-base.2=C\:\\Users\\mitadm\\Downloads\\Fluid Interfaces\\android-BluetoothLeGatt-master2\\android-BluetoothLeGatt-master\\Application\\build\\intermediates\\transforms\\dexMerger\\debug\\45
-base.1=C\:\\Users\\mitadm\\Downloads\\Fluid Interfaces\\android-BluetoothLeGatt-master2\\android-BluetoothLeGatt-master\\Application\\build\\intermediates\\transforms\\dexMerger\\debug\\48
-base.0=C\:\\Users\\mitadm\\Downloads\\Fluid Interfaces\\android-BluetoothLeGatt-master2\\android-BluetoothLeGatt-master\\Application\\build\\intermediates\\transforms\\dexMerger\\debug\\47

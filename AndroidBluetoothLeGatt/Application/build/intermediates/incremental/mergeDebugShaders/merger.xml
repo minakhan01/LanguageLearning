@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merger version="3"><dataSet config="main"><source path="C:\Users\mitadm\Downloads\Fluid Interfaces\android-BluetoothLeGatt-master2\android-BluetoothLeGatt-master\Application\src\main\shaders"/></dataSet><dataSet config="debug"><source path="C:\Users\mitadm\Downloads\Fluid Interfaces\android-BluetoothLeGatt-master2\android-BluetoothLeGatt-master\Application\src\debug\shaders"/></dataSet></merger>
+<merger version="3"><dataSet config="main"><source path="/home/calvin/Documents/Github/LanguageLearning/AndroidBluetoothLeGatt/Application/src/main/shaders"/></dataSet><dataSet config="debug"><source path="/home/calvin/Documents/Github/LanguageLearning/AndroidBluetoothLeGatt/Application/src/debug/shaders"/></dataSet></merger>

@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "C:\\Users\\mitadm\\Downloads\\Fluid Interfaces\\android-BluetoothLeGatt-master2\\android-BluetoothLeGatt-master\\Application\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-land\\values-land.xml",
+            "outputFile": "/home/calvin/Documents/Github/LanguageLearning/AndroidBluetoothLeGatt/Application/build/intermediates/incremental/mergeDebugResources/merged.dir/values-land/values-land.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\mitadm\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-27.0.2.aar\\481ad1b0e121ebe3cdfb7d8518cd8c05\\res\\values-land\\values-land.xml",
+                    "source": "/home/calvin/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.0.2.aar/056015ed6ec7265a59cba3824f67a117/res/values-land/values-land.xml",
                     "from": {
                         "startLines": "2,3,4,5",
                         "startColumns": "4,4,4,4",

@@ -1,44 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "C:\\Users\\mitadm\\Downloads\\Fluid Interfaces\\android-BluetoothLeGatt-master2\\android-BluetoothLeGatt-master\\Application\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-ky\\values-ky.xml",
+            "outputFile": "/home/calvin/Documents/Github/LanguageLearning/AndroidBluetoothLeGatt/Application/build/intermediates/incremental/mergeDebugResources/merged.dir/values-ky/values-ky.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\mitadm\\.gradle\\caches\\transforms-1\\files-1.1\\play-services-basement-11.8.0.aar\\3dc834aaa283783fcd13e553d0ffeeda\\res\\values-ky\\values.xml",
-                    "from": {
-                        "startLines": "4",
-                        "startColumns": "0",
-                        "startOffsets": "283",
-                        "endColumns": "220",
-                        "endOffsets": "503"
-                    },
-                    "to": {
-                        "startLines": "27",
-                        "startColumns": "4",
-                        "startOffsets": "3007",
-                        "endColumns": "220",
-                        "endOffsets": "3223"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\mitadm\\.gradle\\caches\\transforms-1\\files-1.1\\support-compat-27.0.2.aar\\4371a663484da38275663750891e72ba\\res\\values-ky\\values-ky.xml",
-                    "from": {
-                        "startLines": "2",
-                        "startColumns": "4",
-                        "startOffsets": "55",
-                        "endColumns": "100",
-                        "endOffsets": "151"
-                    },
-                    "to": {
-                        "startLines": "38",
-                        "startColumns": "4",
-                        "startOffsets": "4643",
-                        "endColumns": "100",
-                        "endOffsets": "4739"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\mitadm\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-27.0.2.aar\\481ad1b0e121ebe3cdfb7d8518cd8c05\\res\\values-ky\\values-ky.xml",
+                    "source": "/home/calvin/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.0.2.aar/056015ed6ec7265a59cba3824f67a117/res/values-ky/values-ky.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -55,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\mitadm\\.gradle\\caches\\transforms-1\\files-1.1\\play-services-base-11.8.0.aar\\5936b44be6a4f31ace07b3f376634c35\\res\\values-ky\\values.xml",
+                    "source": "/home/calvin/.gradle/caches/transforms-1/files-1.1/play-services-base-11.8.0.aar/a894b12c9ec53421ba63196d5b349523/res/values-ky/values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
                         "startColumns": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
@@ -69,6 +35,40 @@
                         "startOffsets": "1862,1970,2151,2282,2391,2595,2724,2869,3228,3456,3565,3746,3878,4074,4271,4365,4455",
                         "endColumns": "107,180,130,108,203,128,144,137,227,108,180,131,195,196,93,89,106",
                         "endOffsets": "1965,2146,2277,2386,2590,2719,2864,3002,3451,3560,3741,3873,4069,4266,4360,4450,4557"
+                    }
+                },
+                {
+                    "source": "/home/calvin/.gradle/caches/transforms-1/files-1.1/play-services-basement-11.8.0.aar/7b70584a7421dd8eb99c0b4cd9bb34ee/res/values-ky/values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "283",
+                        "endColumns": "220",
+                        "endOffsets": "503"
+                    },
+                    "to": {
+                        "startLines": "27",
+                        "startColumns": "4",
+                        "startOffsets": "3007",
+                        "endColumns": "220",
+                        "endOffsets": "3223"
+                    }
+                },
+                {
+                    "source": "/home/calvin/.gradle/caches/transforms-1/files-1.1/support-compat-27.0.2.aar/f6fceac5247be44a98fd341a656f80c4/res/values-ky/values-ky.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    },
+                    "to": {
+                        "startLines": "38",
+                        "startColumns": "4",
+                        "startOffsets": "4643",
+                        "endColumns": "100",
+                        "endOffsets": "4739"
                     }
                 }
             ]

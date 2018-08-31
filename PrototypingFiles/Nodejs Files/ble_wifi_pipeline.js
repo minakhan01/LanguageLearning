@@ -1,3 +1,4 @@
+###
 var bleno = require('bleno');
 var exec = require('child_process').exec;
 var path = require( 'path' );
@@ -19,12 +20,15 @@ var updateCallback;
 var terminalCallback;
 var terminalResponse;
 var results;
+var recognitionText="";
+###
+
 
 var START_CHAR = String.fromCharCode(002); //START OF TEXT CHAR
 var END_CHAR = String.fromCharCode(003);   //END OF TEXT CHAR
 
 var recognitionText;
-const pyScriptPath = './press_object_recognition.py';
+const pyScriptPath = './sendToBLE.py';
 const jsScriptPath = './firebase_upload.js';
 
 var options = {
@@ -34,7 +38,7 @@ pythonOptions: ['-u'],
 scriptPath: './',
 };
 
-var pyshell = new PythonShell('press_object_recognition.py', options);
+var pyshell = new PythonShell(pyScriptPath, options);
 
 function sliceUpResponse(callback, responseText) {
   if (!responseText || !responseText.trim()) return;
@@ -45,13 +49,6 @@ function sliceUpResponse(callback, responseText) {
   }
   callback(new Buffer(END_CHAR));
 }
-
-pyshell.on('message', function (message) {
-  // received a message sent from the Python script (a simple "print" statement)
-  console.log(message);
-  recognitionText = message;
-  var firebaseUpload = cp.fork(jsScriptPath);
-});
 
 
 var terminal = new bleno.Characteristic({
@@ -85,7 +82,12 @@ var terminal = new bleno.Characteristic({
 	onSubscribe: function(maxValueSize, updateValueCallback) {
 	    console.log("onSubscribe called");
   		console.log("Sending: " + recognitionText);
-    	updateValueCallback(new Buffer(recognitionText));
+  		pyshell.on('message', function (message) {
+		  // received a message sent from the Python script (a simple "print" statement)
+		  console.log(message);
+		  updateValueCallback(new Buffer(message));
+		});
+    	
 	},
 	onUnsubscribe: function() {
 		console.log("onUnsubscribe");
